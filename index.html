@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MAX Mini App — skeleton</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 16px; line-height: 1.45; }
+    pre { background: #f4f4f4; padding: 12px; overflow: auto; font-size: 13px; }
+    .warn { color: #8a5a00; }
+  </style>
+  <!-- Проверьте актуальный src в официальной документации MAX Bridge -->
+  <script src="https://max.ru/js/max-web-app.js"></script>
+</head>
+<body>
+  <h1>MAX Mini App</h1>
+  <p id="status">Загрузка…</p>
+  <p class="warn">
+    Демо: <code>initDataUnsafe</code> не использовать для проверки личности.
+    Для API — только <code>initData</code> + валидация на сервере.
+  </p>
+  <h2>initDataUnsafe (демо)</h2>
+  <pre id="unsafe">—</pre>
+  <h2>initData (строка для сервера, не показывайте пользователю в проде)</h2>
+  <pre id="raw">—</pre>
+
+  <script>
+    function main() {
+      const status = document.getElementById('status');
+      const unsafeEl = document.getElementById('unsafe');
+      const rawEl = document.getElementById('raw');
+
+      const wa = window.WebApp;
+      if (!wa) {
+        status.textContent =
+          'Объект WebApp недоступен. Откройте страницу из мини-приложения в клиенте MAX.';
+        unsafeEl.textContent = '(нет данных)';
+        rawEl.textContent = '(нет данных)';
+        return;
+      }
+
+      status.textContent =
+        'Платформа: ' + wa.platform + ' · MAX ' + (wa.version || '?');
+
+      try {
+        unsafeEl.textContent = JSON.stringify(wa.initDataUnsafe ?? null, null, 2);
+      } catch (e) {
+        unsafeEl.textContent = String(e);
+      }
+
+      rawEl.textContent = wa.initData || '(пусто)';
+
+      // Сообщить клиенту MAX, что контент готов (важно для таймаута ~15 с)
+      if (typeof wa.ready === 'function') {
+        wa.ready();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', main);
+    } else {
+      main();
+    }
+  </script>
+</body>
+</html>
