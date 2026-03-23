@@ -1,20 +1,167 @@
 body {
-  font-family: system-ui, sans-serif;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   margin: 0;
   line-height: 1.45;
+  background: linear-gradient(180deg, #f2f6ff 0%, #f7f9fc 100%);
+  color: #1f2937;
 }
 
 #root {
-  padding: 16px;
+  padding: 20px;
+}
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.status {
+  color: #475569;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 20px;
+}
+
+.btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px 16px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.05s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  background: #eff6ff;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.btn--primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.btn--primary:hover {
+  background: #1d4ed8;
+}
+
+.btn--neutral {
+  background: #ffffff;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+}
+
+.profileHeader {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #dbeafe;
+}
+
+.sectionTitle {
+  margin: 0;
+}
+
+.subTitle {
+  margin: 16px 0 8px;
+}
+
+.muted {
+  margin: 4px 0 0;
+  color: #64748b;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.infoItem {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.infoLabel {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.infoValue {
+  margin: 4px 0 0;
+  font-weight: 600;
 }
 
 pre {
-  background: #f4f4f4;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 10px;
   padding: 12px;
   overflow: auto;
   font-size: 13px;
+  max-height: 280px;
+  border: 1px solid #1e293b;
 }
 
 .warn {
   color: #8a5a00;
+}
+
+.methodsList {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.methodItem {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8fafc;
+}
+
+.methodName {
+  margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.methodDescription {
+  margin: 6px 0 0;
+  color: #475569;
 }
