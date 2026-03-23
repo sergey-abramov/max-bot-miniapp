@@ -1,13 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig(() => {
-  const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
-  const base =
-    process.env.GITHUB_ACTIONS === "true" && repoName ? `/${repoName}/` : "/";
-
-  return {
-    plugins: [react()],
-    base,
-  };
+export default defineConfig({
+  plugins: [react()],
+  // Relative asset paths are the most robust option for GitHub Pages
+  // and embedded WebView launches.
+  base: "./",
 });
