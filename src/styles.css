@@ -165,3 +165,73 @@ pre {
   margin: 6px 0 0;
   color: #475569;
 }
+
+.patentSearchHeader {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 14px 0 10px;
+}
+
+.patentInput {
+  flex: 1;
+  min-width: 220px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  padding: 10px 14px;
+  font-size: 14px;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.patentError {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.patentResults {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.patentResultItem {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.patentResultTitle {
+  margin: 0;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.patentResultMeta {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.patentResultSnippet {
+  margin: 8px 0 0;
+  color: #475569;
+}
+
+.patentPagination {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.patentPaginationInfo {
+  color: #475569;
+  font-weight: 600;
+}

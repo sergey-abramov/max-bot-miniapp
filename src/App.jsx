@@ -67,6 +67,12 @@ export default function App() {
   const wa = useMemo(() => window.WebApp, []);
   const [mode, setMode] = useState("pretty");
   const [isMethodsOpen, setIsMethodsOpen] = useState(false);
+  const [showPatentSearch, setShowPatentSearch] = useState(false);
+  const [patentQuery, setPatentQuery] = useState("");
+  const [patentPage, setPatentPage] = useState(1);
+  const [patentLoading, setPatentLoading] = useState(false);
+  const [patentError, setPatentError] = useState(null);
+  const [patentData, setPatentData] = useState(null);
 
   useEffect(() => {
     if (wa && typeof wa.ready === "function") {
@@ -98,12 +104,67 @@ export default function App() {
   ];
 
   function openPatentsPage() {
-    const url = "https://searchplatform.rospatent.gov.ru/";
-    if (wa && typeof wa.openLink === "function") {
-      wa.openLink(url);
+    setShowPatentSearch(true);
+    setPatentPage(1);
+    setPatentError(null);
+    // Поиск запустим после ввода запроса пользователем.
+  }
+
+  async function searchPatents(nextPage = 1) {
+    const query = patentQuery.trim();
+    if (!query) {
+      setPatentError({ message: "Введите запрос (минимум 2 символа)." });
       return;
     }
-    window.open(url, "_blank", "noopener,noreferrer");
+
+    const endpoint =
+      import.meta.env.VITE_PATENTS_API_URL ||
+      "https://max-bot-back-api.vercel.app/api/patents/search";
+
+    setPatentLoading(true);
+    setPatentError(null);
+    try {
+      const requestId = `req_${Math.random().toString(16).slice(2)}_${Date.now()}`;
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-Id": requestId,
+        },
+        body: JSON.stringify({
+          query,
+          queryMode: "qn",
+          page: nextPage,
+          pageSize: 20,
+          includeFacets: 0,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        const msg =
+          data?.error?.message ||
+          data?.message ||
+          `Ошибка поиска: ${res.status}`;
+        setPatentError({
+          message: msg,
+          code: data?.error?.code,
+          requestId: data?.error?.requestId,
+        });
+        setPatentData(null);
+        return;
+      }
+
+      setPatentData(data);
+      setPatentPage(nextPage);
+    } catch (e) {
+      setPatentError({
+        message: e?.message ? String(e.message) : "Network error",
+      });
+      setPatentData(null);
+    } finally {
+      setPatentLoading(false);
+    }
   }
 
   return (
@@ -115,14 +176,20 @@ export default function App() {
         <button
           type="button"
           className={`btn ${mode === "pretty" ? "btn--primary" : "btn--neutral"}`}
-          onClick={() => setMode("pretty")}
+          onClick={() => {
+            setShowPatentSearch(false);
+            setMode("pretty");
+          }}
         >
           Профиль
         </button>
         <button
           type="button"
           className={`btn ${mode === "developer" ? "btn--primary" : "btn--neutral"}`}
-          onClick={() => setMode("developer")}
+          onClick={() => {
+            setShowPatentSearch(false);
+            setMode("developer");
+          }}
         >
           Для разработчиков
         </button>
@@ -131,7 +198,100 @@ export default function App() {
         </button>
       </section>
 
-      {mode === "pretty" ? (
+      {showPatentSearch ? (
+        <section className="card">
+          <h2 className="sectionTitle">Поиск патентов (Роспатент)</h2>
+          <p className="muted">Результаты получает ваш backend через Vercel.</p>
+
+          <div className="patentSearchHeader">
+            <input
+              className="patentInput"
+              value={patentQuery}
+              placeholder="Введите запрос (например: нейросеть)"
+              onChange={(e) => setPatentQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") searchPatents(1);
+              }}
+            />
+            <button
+              type="button"
+              className={`btn ${patentLoading ? "btn--neutral" : "btn--primary"}`}
+              disabled={patentLoading}
+              onClick={() => searchPatents(1)}
+            >
+              {patentLoading ? "Идет поиск..." : "Искать"}
+            </button>
+          </div>
+
+          {!patentLoading && !patentError && !patentData ? (
+            <p className="muted">Введите запрос и нажмите “Искать”.</p>
+          ) : null}
+
+          {patentError ? <p className="patentError">{patentError.message}</p> : null}
+
+          {patentData?.items?.length ? (
+            <div className="patentResults">
+              {patentData.items.map((item) => (
+                <article key={item.id} className="patentResultItem">
+                  <h3 className="patentResultTitle">{item.title}</h3>
+                  <div className="patentResultMeta">
+                    {item.applicant ? <span>{item.applicant}</span> : null}
+                    {item.publishedAt ? <span>{item.publishedAt}</span> : null}
+                  </div>
+                  {item.snippet ? (
+                    <p className="patentResultSnippet">{item.snippet}</p>
+                  ) : null}
+                  {item.url ? (
+                    <button
+                      type="button"
+                      className="btn btn--neutral"
+                      onClick={() => {
+                        if (wa && typeof wa.openLink === "function") {
+                          wa.openLink(item.url);
+                          return;
+                        }
+                        window.open(item.url, "_blank", "noopener,noreferrer");
+                      }}
+                    >
+                      Открыть
+                    </button>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : null}
+
+          {patentData ? (
+            <div className="patentPagination">
+              <button
+                type="button"
+                className="btn btn--neutral"
+                disabled={patentLoading || patentData.pagination.page <= 1}
+                onClick={() => searchPatents(patentData.pagination.page - 1)}
+              >
+                Назад
+              </button>
+
+              <span className="patentPaginationInfo">
+                Страница {patentData.pagination.page} из{" "}
+                {Math.max(
+                  1,
+                  Math.ceil(patentData.pagination.total / patentData.pagination.pageSize)
+                )}
+              </span>
+
+              <button
+                type="button"
+                className="btn btn--primary"
+                disabled={patentLoading || !patentData.pagination.hasNext}
+                onClick={() => searchPatents(patentData.pagination.page + 1)}
+              >
+                Далее
+              </button>
+            </div>
+          ) : null}
+        </section>
+      ) : mode === "pretty" ? (
         <section className="card">
           <div className="profileHeader">
             <img
