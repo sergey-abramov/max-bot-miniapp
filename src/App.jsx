@@ -8,6 +8,26 @@ function prettyJson(value) {
   }
 }
 
+function buildPatentUrl(urlLike) {
+  const raw = String(urlLike ?? "").trim();
+  if (!raw) return null;
+
+  // If backend already returns a full URL - open it as-is.
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  // In current API responses `url` appears to be only DocNumber (e.g. "0002348331").
+  // Build a working FIPS/Rospatent viewer link.
+  if (/^\d+$/.test(raw)) {
+    const docNumber = raw.replace(/^0+/, "") || raw; // avoid DocNumber=0000...
+    return `https://www.fips.ru/registers-doc-view/fips_servlet?DB=RUPAT&DocNumber=${encodeURIComponent(
+      docNumber
+    )}&TypeFile=html`;
+  }
+
+  // Unknown format - return original value (may still be resolvable by MAX).
+  return raw;
+}
+
 const LIBRARY_METHODS = [
   { name: "ready()", description: "Сообщает клиенту MAX, что мини-приложение готово к работе." },
   { name: "close()", description: "Закрывает мини-приложение." },
@@ -201,7 +221,6 @@ export default function App() {
       {showPatentSearch ? (
         <section className="card">
           <h2 className="sectionTitle">Поиск патентов (Роспатент)</h2>
-          <p className="muted">Результаты получает ваш backend через Vercel.</p>
 
           <div className="patentSearchHeader">
             <input
@@ -246,11 +265,20 @@ export default function App() {
                       type="button"
                       className="btn btn--neutral"
                       onClick={() => {
-                        if (wa && typeof wa.openLink === "function") {
-                          wa.openLink(item.url);
-                          return;
+                        const urlToOpen = buildPatentUrl(item.url);
+                        if (!urlToOpen) return;
+
+                        // Prefer MAX API when available, but keep fallback for malformed/unexpected input.
+                        try {
+                          if (wa && typeof wa.openLink === "function") {
+                            wa.openLink(urlToOpen);
+                            return;
+                          }
+                        } catch {
+                          // ignore and fallback to window.open
                         }
-                        window.open(item.url, "_blank", "noopener,noreferrer");
+
+                        window.open(urlToOpen, "_blank", "noopener,noreferrer");
                       }}
                     >
                       Открыть
